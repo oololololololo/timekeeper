@@ -4,8 +4,9 @@ import { useEffect, useState, useRef } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { useParams, useSearchParams } from 'next/navigation'
 import { clsx } from 'clsx'
-import { Maximize, Bell } from 'lucide-react'
+import { Maximize, Bell, ScrollText } from 'lucide-react'
 import ReactionSystem from '@/components/ReactionSystem'
+import Teleprompter from '@/components/Teleprompter'
 
 // Helper to format MM:SS
 const fmt = (s: number) => {
@@ -33,6 +34,7 @@ export default function SpeakerPage() {
     // IDENTITY STATE
     const [myIdentityIndex, setMyIdentityIndex] = useState<number | null>(null)
     const [showIdentitySelector, setShowIdentitySelector] = useState(false)
+    const [showTeleprompter, setShowTeleprompter] = useState(false)
 
     // Check LocalStorage OR URL on load
     useEffect(() => {
@@ -261,19 +263,51 @@ export default function SpeakerPage() {
                 </div>
             )}
 
-            <div className="text-center z-10">
-                <h1 className="text-3xl md:text-5xl font-bold mb-4 opacity-80">{currentSpeaker?.name || 'Reunión Finalizada'}</h1>
+            {/* MAIN CONTENT SWITCHER */}
+            {showTeleprompter ? (
+                /* TELEPROMPTER VIEW - Replaces everything */
+                <Teleprompter
+                    isOpen={showTeleprompter}
+                    onClose={() => setShowTeleprompter(false)}
+                    meetingTimeFormatted={fmt(localSeconds)}
+                    timerColor={(() => {
+                        if (localSeconds <= 0) return "#d63031"
+                        if (progress < 30) return "#d63031"
+                        if (progress < 50) return "#fdcb6e"
+                        return "#00b894"
+                    })()}
+                    isTimerAnimated={localSeconds <= 0}
+                />
+            ) : (
+                /* TIMER VIEW */
+                <>
+                    <div className="text-center z-10 flex flex-col items-center">
+                        <h1 className="text-3xl md:text-5xl font-bold mb-8 opacity-90 drop-shadow-md">
+                            {currentSpeaker?.name || 'Reunión Finalizada'}
+                        </h1>
 
-                <div className="text-[25vw] leading-none font-bold font-mono tracking-tighter">
-                    {fmt(localSeconds)}
-                </div>
+                        <div className="text-[28vw] md:text-[25vw] leading-none font-bold font-mono tracking-tighter drop-shadow-2xl">
+                            {fmt(localSeconds)}
+                        </div>
 
-                {nextSpeaker && (
-                    <div className="absolute bottom-10 left-0 w-full text-center text-xl md:text-2xl opacity-60">
-                        Siguiente: <strong>{nextSpeaker.name}</strong>
+                        {nextSpeaker && (
+                            <div className="absolute bottom-12 left-0 w-full text-center text-xl md:text-3xl opacity-70 font-medium">
+                                Siguiente: <span className="font-bold">{nextSpeaker.name}</span>
+                            </div>
+                        )}
                     </div>
-                )}
-            </div>
+
+                    {/* TELEPROMPTER BUTTON - Only visible in Timer View */}
+                    <button
+                        onClick={() => setShowTeleprompter(true)}
+                        className="absolute top-6 right-6 z-40 p-4 bg-white text-black hover:bg-gray-100 rounded-full transition-all group shadow-xl hover:scale-110 border-2 border-black/5"
+                        title="Abrir Teleprompter"
+                    >
+                        <ScrollText className="w-6 h-6" />
+                    </button>
+                </>
+            )}
+
             <ReactionSystem meetingId={id} />
         </div>
     )

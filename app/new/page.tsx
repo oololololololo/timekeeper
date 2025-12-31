@@ -5,7 +5,7 @@ import { createClient } from '@/utils/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { addSpeaker } from '@/app/dashboard/speakers/actions'
-import { Plus, X, Clock, Calendar, Hash, Calculator, CircleDollarSign, CheckCircle, Users, Rocket, Timer, Save } from 'lucide-react'
+import { Plus, X, Clock, Calendar, Hash, Calculator, CircleDollarSign, CheckCircle, Users, Rocket, Timer, Save, Trash2 } from 'lucide-react'
 import { DatePicker } from '@/components/ui/date-picker'
 import { TimePicker } from '@/components/ui/time-picker'
 import { addMinutes, format } from 'date-fns'
@@ -25,6 +25,7 @@ type CostData = {
     estimatedReturn: string
     objective: string
     extraCosts: number
+    shareCost: boolean
 }
 
 export default function CreateMeeting() {
@@ -46,16 +47,28 @@ export default function CreateMeeting() {
 
     // Cost Popup State
     const [showCostPopup, setShowCostPopup] = useState(false)
+    const [wizardStep, setWizardStep] = useState(0) // 0: Intro, 1: Attendees, 2: Salary, 3: Objective, 4: Extras, 5: Summary
     const [costData, setCostData] = useState<CostData>({
         attendees: 0,
         avgMonthlyCost: 0,
         estimatedReturn: '',
         objective: '',
-        extraCosts: 0
+        extraCosts: 0,
+        shareCost: false
     })
+
+    // Auto-sync attendees count when opening wizard if 0
+    useEffect(() => {
+        if (showCostPopup && costData.attendees === 0) {
+            setCostData(prev => ({ ...prev, attendees: participants.length }))
+        }
+    }, [showCostPopup, participants.length])
 
     // Confirmation Modal State
     const [showConfirmModal, setShowConfirmModal] = useState(false)
+    const [showResetConfirmModal, setShowResetConfirmModal] = useState(false)
+
+
 
     // Speakers Fetching (State & Logic)
     const [savedSpeakers, setSavedSpeakers] = useState<any[]>([])
@@ -198,7 +211,7 @@ export default function CreateMeeting() {
 
         // Calculate Total Cost before sending (re-calc to be sure or use state if extracted)
         const totalMinutesCall = participants.reduce((acc, p) => acc + (p.minutes || 0), 0)
-        const hourlyRateCall = (costData.avgMonthlyCost || 0) / 22 / 9
+        const hourlyRateCall = (costData.avgMonthlyCost || 0) / 22 / 8
         const timeCostCall = (costData.attendees || 0) * hourlyRateCall * (totalMinutesCall / 60)
         const totalCostCall = timeCostCall + (costData.extraCosts || 0)
 
@@ -213,7 +226,7 @@ export default function CreateMeeting() {
                 startDate: startIso,
                 endDate: endIso,
                 adminEmail,
-                costData: totalCostCall > 0 ? {
+                costData: (totalCostCall > 0 && costData.shareCost) ? {
                     totalCost: totalCostCall,
                     objective: costData.objective,
                     returnText: costData.estimatedReturn
@@ -228,7 +241,7 @@ export default function CreateMeeting() {
     // Calculate Total Cost
     const totalMinutes = participants.reduce((acc, p) => acc + (p.minutes || 0), 0)
     // Formula: Monthly Cost / 22 days / 9 hours
-    const hourlyRate = (costData.avgMonthlyCost || 0) / 22 / 9
+    const hourlyRate = (costData.avgMonthlyCost || 0) / 22 / 8
     const timeCost = (costData.attendees || 0) * hourlyRate * (totalMinutes / 60)
     const totalCost = timeCost + (costData.extraCosts || 0)
 
@@ -528,7 +541,17 @@ export default function CreateMeeting() {
 
                 {/* COST PREVIEW */}
                 {totalCost > 0 && (
-                    <div className="mt-6 p-4 bg-white/5 border border-white/10 rounded-xl text-center animate-fade-in">
+                    <div className="mt-6 p-4 bg-white/5 border border-white/10 rounded-xl text-center animate-fade-in relative">
+                        <div className="absolute top-4 right-4 group">
+                            <button
+                                type="button"
+                                onClick={() => setShowResetConfirmModal(true)}
+                                className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition"
+                                title="Borrar y recalcular"
+                            >
+                                <Trash2 className="w-4 h-4" />
+                            </button>
+                        </div>
                         <div className="text-gray-400 text-sm mb-1 uppercase tracking-wider font-bold">Costo Estimado de la Reunión</div>
                         <div className="text-3xl font-bold text-green-400 flex items-center justify-center gap-2">
                             {formatCurrency(totalCost)}
@@ -540,169 +563,318 @@ export default function CreateMeeting() {
                             (Base: {formatCurrency(costData.avgMonthlyCost)}/mes avg. por persona)
                         </div>
                     </div>
-                )}
+                )
+                }
 
-            </form>
+            </form >
 
             {/* CONFIRMATION MODAL */}
-            {showConfirmModal && (
-                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-[#1a1a2e] border border-white/10 w-full max-w-sm rounded-2xl p-6 shadow-2xl text-center">
-                        <div className="bg-yellow-500/20 text-yellow-500 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <CircleDollarSign />
+            {
+                showConfirmModal && (
+                    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                        <div className="bg-[#1a1a2e] border border-white/10 w-full max-w-sm rounded-2xl p-6 shadow-2xl text-center">
+                            <div className="bg-yellow-500/20 text-yellow-500 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <CircleDollarSign />
+                            </div>
+                            <h3 className="text-xl font-bold mb-2">¿Calcular Costos?</h3>
+                            <p className="text-gray-400 text-sm mb-6">Esta reunión tiene un costo oculto. ¿Quieres estimarlo antes de lanzarla?</p>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => {
+                                        setShowConfirmModal(false)
+                                        createMeeting()
+                                    }}
+                                    className="flex-1 bg-white/10 hover:bg-white/20 text-white py-3 rounded-xl font-bold transition"
+                                >
+                                    No, omitir
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setShowConfirmModal(false)
+                                        setShowCostPopup(true)
+                                    }}
+                                    className="flex-1 bg-[#667eea] hover:bg-[#5a6fd6] text-white py-3 rounded-xl font-bold transition"
+                                >
+                                    Sí, calcular
+                                </button>
+                            </div>
                         </div>
-                        <h3 className="text-xl font-bold mb-2">¿Calcular Costos?</h3>
-                        <p className="text-gray-400 text-sm mb-6">Esta reunión tiene un costo oculto. ¿Quieres estimarlo antes de lanzarla?</p>
+                    </div>
+                )
+            }
+
+            {/* RESET COSTS CONFIRMATION MODAL */}
+            {showResetConfirmModal && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-[#1a1a2e] border border-red-500/30 w-full max-w-sm rounded-2xl p-6 shadow-2xl text-center animate-fade-in ring-1 ring-red-500/20">
+                        <div className="bg-red-500/20 text-red-500 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Trash2 />
+                        </div>
+                        <h3 className="text-xl font-bold mb-2 text-white">¿Borrar Costos?</h3>
+                        <p className="text-gray-400 text-sm mb-6">Se eliminará toda la configuración financiera de esta reunión. Esta acción no se puede deshacer.</p>
                         <div className="flex gap-3">
                             <button
-                                onClick={() => {
-                                    setShowConfirmModal(false)
-                                    createMeeting()
-                                }}
-                                className="flex-1 bg-white/10 hover:bg-white/20 text-white py-3 rounded-xl font-bold transition"
+                                onClick={() => setShowResetConfirmModal(false)}
+                                className="flex-1 bg-white/10 hover:bg-white/20 text-white py-3 rounded-xl font-bold transition border border-white/5"
                             >
-                                No, omitir
+                                Cancelar
                             </button>
                             <button
                                 onClick={() => {
-                                    setShowConfirmModal(false)
-                                    setShowCostPopup(true)
+                                    setCostData({
+                                        attendees: 0,
+                                        avgMonthlyCost: 0,
+                                        estimatedReturn: '',
+                                        objective: '',
+                                        extraCosts: 0,
+                                        shareCost: false
+                                    })
+                                    setWizardStep(0)
+                                    setShowResetConfirmModal(false)
                                 }}
-                                className="flex-1 bg-[#667eea] hover:bg-[#5a6fd6] text-white py-3 rounded-xl font-bold transition"
+                                className="flex-1 bg-red-500 hover:bg-red-600 text-white py-3 rounded-xl font-bold transition shadow-lg shadow-red-500/20"
                             >
-                                Sí, calcular
+                                Sí, borrar
                             </button>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* COST POPUP */}
-            {showCostPopup && (
-                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-[#1a1a2e] border border-white/10 w-full max-w-lg rounded-2xl p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
-                        <button
-                            onClick={() => setShowCostPopup(false)}
-                            className="absolute top-4 right-4 text-gray-400 hover:text-white"
-                        >
-                            <X className="w-6 h-6" />
-                        </button>
+            {/* COST WIZARD POPUP */}
+            {
+                showCostPopup && (
+                    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                        <div className="bg-[#1a1a2e] border border-white/10 w-full max-w-lg rounded-2xl p-8 shadow-2xl relative flex flex-col min-h-[400px]">
 
-                        <h2 className="text-2xl font-bold mb-4 flex items-center gap-2 text-green-400">
-                            <CircleDollarSign /> Costo de Reunión
-                        </h2>
-
-                        <div className="bg-blue-500/10 border border-blue-500/20 p-4 rounded-xl mb-6 text-sm text-gray-300 space-y-2">
-                            <p><strong>💡 ¿Por qué calcular esto?</strong></p>
-                            <p>Conocer el costo oculto de las reuniones ayuda a evaluar su verdadero retorno de inversión (ROI). Al ingresar estos datos, se incluirá un resumen de impacto en las invitaciones para concientizar a los participantes.</p>
-                        </div>
-
-                        <div className="space-y-4">
-                            <div>
-                                <label className="text-xs uppercase text-gray-500 font-bold mb-1 block">Cant. total de asistentes</label>
-                                <div className="text-xs text-gray-600 mb-2">Personal propio o externo a la organización</div>
-                                <input
-                                    type="number"
-                                    className="w-full bg-black/30 border border-white/10 rounded-lg p-3 text-white focus:border-green-500 outline-none"
-                                    value={costData.attendees}
-                                    onChange={(e) => setCostData({ ...costData, attendees: Number(e.target.value) })}
-                                />
+                            {/* HEADER & CLOSE */}
+                            <div className="flex justify-between items-center mb-6">
+                                <div className="flex items-center gap-2 text-green-400">
+                                    <CircleDollarSign className="w-6 h-6" />
+                                    <span className="font-bold text-lg">Calculadora de Impacto</span>
+                                </div>
+                                <button
+                                    onClick={() => setShowCostPopup(false)}
+                                    className="text-gray-500 hover:text-white transition"
+                                >
+                                    <X className="w-6 h-6" />
+                                </button>
                             </div>
 
-                            <div>
-                                <label className="text-xs uppercase text-gray-500 font-bold mb-1 block">Costo empresa mes (Promedio)</label>
-                                <div className="text-xs text-gray-600 mb-2">
-                                    Si desconoce, use "Sueldo mínimo" (~$650.000 CLP costo empresa referencial).
-                                </div>
-                                <div className="flex gap-2">
-                                    <input
-                                        type="number"
-                                        className="w-full bg-black/30 border border-white/10 rounded-lg p-3 text-white focus:border-green-500 outline-none"
-                                        placeholder="$"
-                                        value={costData.avgMonthlyCost}
-                                        onChange={(e) => setCostData({ ...costData, avgMonthlyCost: Number(e.target.value) })}
+                            {/* PROGRESS BAR */}
+                            {wizardStep > 0 && wizardStep < 5 && (
+                                <div className="w-full h-1 bg-white/10 rounded-full mb-6">
+                                    <div
+                                        className="h-full bg-green-500 rounded-full transition-all duration-300"
+                                        style={{ width: `${(wizardStep / 5) * 100}%` }}
                                     />
+                                </div>
+                            )}
+
+                            {/* STEPS CONTENT */}
+                            <div className="flex-1 flex flex-col justify-center animate-fade-in">
+
+                                {/* STEP 0: INTRO */}
+                                {wizardStep === 0 && (
+                                    <div className="text-center">
+                                        <div className="bg-red-500/20 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 text-red-400 text-3xl">😱</div>
+                                        <h2 className="text-2xl font-bold mb-4">¿Sabías que una reunión mal planificada es quemar dinero en vivo?</h2>
+                                        <p className="text-gray-400 mb-8 leading-relaxed">
+                                            TimeKeeper te ayuda a calcular el costo oculto de juntar a tu equipo.
+                                            Visualiza la inversión real y asegúrate de que valga la pena cada minuto.
+                                        </p>
+                                        <button
+                                            onClick={() => setWizardStep(1)}
+                                            className="w-full bg-[#667eea] hover:bg-[#5a6fd6] text-white font-bold py-4 rounded-xl shadow-lg transition transform hover:scale-105"
+                                        >
+                                            Calcular Costos
+                                        </button>
+                                    </div>
+                                )}
+
+                                {/* STEP 1: ATTENDEES */}
+                                {wizardStep === 1 && (
+                                    <div>
+                                        <label className="block text-xl font-bold mb-2">¿Cuántas personas participan?</label>
+                                        <p className="text-gray-400 text-sm mb-6">Incluye a todos, incluso si solo entran de oyentes.</p>
+
+                                        <input
+                                            type="number"
+                                            autoFocus
+                                            className="w-full text-4xl bg-black/30 border border-white/10 rounded-xl p-6 text-center text-white focus:border-green-500 outline-none font-bold"
+                                            value={costData.attendees}
+                                            onChange={(e) => setCostData({ ...costData, attendees: Number(e.target.value) })}
+                                        />
+                                    </div>
+                                )}
+
+                                {/* STEP 2: SALARY */}
+                                {wizardStep === 2 && (
+                                    <div>
+                                        <label className="block text-xl font-bold mb-2">¿Cuál es el Costo Empresa Promedio?</label>
+                                        <p className="text-gray-400 text-sm mb-6">El costo mensual promedio por persona (Sueldo Bruto + Leyes Sociales).</p>
+
+                                        <div className="relative mb-4">
+                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-xl">$</span>
+                                            <input
+                                                type="number"
+                                                autoFocus
+                                                className="w-full text-3xl bg-black/30 border border-white/10 rounded-xl p-6 pl-12 text-white focus:border-green-500 outline-none font-bold"
+                                                placeholder="Ej. 1500000"
+                                                value={costData.avgMonthlyCost || ''}
+                                                onChange={(e) => setCostData({ ...costData, avgMonthlyCost: Number(e.target.value) })}
+                                            />
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setCostData({ ...costData, avgMonthlyCost: 650000 })}
+                                            className="text-sm text-[#667eea] hover:underline flex items-center gap-1"
+                                        >
+                                            <CircleDollarSign className="w-3 h-3" /> Usar Sueldo Mínimo Referencial (~$650.000)
+                                        </button>
+                                    </div>
+                                )}
+
+                                {/* STEP 3: OBJECTIVE */}
+                                {wizardStep === 3 && (
+                                    <div>
+                                        <label className="block text-xl font-bold mb-2">¿Para qué nos reunimos?</label>
+                                        <p className="text-gray-400 text-sm mb-6">Define un objetivo claro. Si no hay objetivo, no debería haber reunión.</p>
+
+                                        <textarea
+                                            autoFocus
+                                            className="w-full bg-black/30 border border-white/10 rounded-xl p-4 text-white h-32 focus:border-green-500 outline-none text-lg resize-none mb-4"
+                                            placeholder="Ej. Definir roadmap Q3..."
+                                            value={costData.objective}
+                                            onChange={(e) => setCostData({ ...costData, objective: e.target.value })}
+                                        />
+
+                                        <div className="flex flex-col gap-3">
+                                            <label className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition ${costData.estimatedReturn === 'No tiene retorno directo asociado' ? 'bg-green-500/10 border-green-500' : 'bg-black/20 border-white/5 hover:bg-white/5'}`}>
+                                                <input
+                                                    type="checkbox"
+                                                    className="hidden"
+                                                    onChange={(e) => setCostData({ ...costData, estimatedReturn: e.target.checked ? 'No tiene retorno directo asociado' : '' })}
+                                                    checked={costData.estimatedReturn === 'No tiene retorno directo asociado'}
+                                                />
+                                                <div className={`w-5 h-5 rounded border flex items-center justify-center ${costData.estimatedReturn === 'No tiene retorno directo asociado' ? 'bg-green-500 border-green-500' : 'border-gray-500'}`}>
+                                                    {costData.estimatedReturn === 'No tiene retorno directo asociado' && <CheckCircle className="w-3 h-3 text-black" />}
+                                                </div>
+                                                <span className="text-sm text-gray-300">Es una reunión informativa / No tiene ROI directo</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* STEP 4: EXTRAS */}
+                                {wizardStep === 4 && (
+                                    <div>
+                                        <label className="block text-xl font-bold mb-2">¿Hay costos extra?</label>
+                                        <p className="text-gray-400 text-sm mb-6">Arriendo de sala, coffee break, licencias, etc.</p>
+
+                                        <div className="relative">
+                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-xl">$</span>
+                                            <input
+                                                type="number"
+                                                className="w-full text-3xl bg-black/30 border border-white/10 rounded-xl p-6 pl-12 text-white focus:border-green-500 outline-none font-bold"
+                                                placeholder="0"
+                                                value={costData.extraCosts || ''}
+                                                onChange={(e) => setCostData({ ...costData, extraCosts: Number(e.target.value) })}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* STEP 5: SUMMARY */}
+                                {wizardStep === 5 && (
+                                    <div className="text-center">
+                                        <h3 className="text-gray-400 uppercase tracking-widest text-sm font-bold mb-2">Costo Total Estimado</h3>
+                                        <div className="text-5xl font-mono font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-400 mb-2 animate-pulse">
+                                            {formatCurrency(
+                                                ((costData.attendees || 0) * ((costData.avgMonthlyCost || 0) / 22 / 8) * (participants.reduce((acc, p) => acc + (p.minutes || 0), 0) / 60)) + (costData.extraCosts || 0)
+                                            )}
+                                        </div>
+                                        <div className="text-sm text-gray-500 mb-8">
+                                            (Tasa de consumo: {formatCurrency(((costData.avgMonthlyCost || 0) / 22 / 8 / 60) * (costData.attendees || 0))}/min)
+                                        </div>
+
+                                        <div className="bg-white/5 rounded-2xl p-6 border border-white/10 text-left space-y-3 mb-8">
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-gray-400">Asistentes:</span>
+                                                <span className="font-bold">{costData.attendees}</span>
+                                            </div>
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-gray-400">Duración Total:</span>
+                                                <span className="font-bold">{participants.reduce((acc, p) => acc + (p.minutes || 0), 0)} min</span>
+                                            </div>
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-gray-400">Costo Mensual Prom.:</span>
+                                                <span className="font-bold">{formatCurrency(costData.avgMonthlyCost)}</span>
+                                            </div>
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-gray-400">Costos Extra:</span>
+                                                <span className="font-bold text-yellow-400">+{formatCurrency(costData.extraCosts)}</span>
+                                            </div>
+                                        </div>
+
+                                        {/* SHARE TOGGLE */}
+                                        <div className="flex flex-col gap-4 mb-6">
+                                            <label className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition ${costData.shareCost ? 'bg-green-500/10 border-green-500/50' : 'bg-white/5 border-white/10'}`}>
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`w-10 h-6 rounded-full relative transition-colors ${costData.shareCost ? 'bg-green-500' : 'bg-gray-600'}`}>
+                                                        <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${costData.shareCost ? 'left-5' : 'left-1'}`} />
+                                                    </div>
+                                                    <div className="text-left">
+                                                        <span className={`block font-bold text-sm ${costData.shareCost ? 'text-green-400' : 'text-gray-300'}`}>
+                                                            {costData.shareCost ? 'Visible para todos' : 'Privado (Solo Admin)'}
+                                                        </span>
+                                                        <span className="text-xs text-gray-500">
+                                                            {costData.shareCost ? 'Los oradores verán el costo de la reunión.' : 'Solo tú verás el costo.'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <input
+                                                    type="checkbox"
+                                                    className="hidden"
+                                                    checked={costData.shareCost}
+                                                    onChange={(e) => setCostData({ ...costData, shareCost: e.target.checked })}
+                                                />
+                                            </label>
+                                        </div>
+
+                                        <button
+                                            onClick={() => setShowCostPopup(false)}
+                                            className="w-full bg-[#667eea] hover:bg-[#5a6fd6] text-white font-bold py-4 rounded-xl shadow-lg transition transform hover:scale-105"
+                                        >
+                                            Guardar Configuración
+                                        </button>
+                                    </div>
+                                )}
+
+                            </div>
+
+                            {/* NAVIGATION BUTTONS */}
+                            {wizardStep > 0 && wizardStep < 5 && (
+                                <div className="flex justify-between mt-8 pt-6 border-t border-white/5">
                                     <button
-                                        type="button"
-                                        onClick={() => setCostData({ ...costData, avgMonthlyCost: 650000 })}
-                                        className="whitespace-nowrap px-3 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-xs text-gray-400"
+                                        onClick={() => setWizardStep(wizardStep - 1)}
+                                        className="text-gray-400 hover:text-white font-medium px-4 py-2 hover:bg-white/5 rounded-lg transition"
                                     >
-                                        Usar Mínimo
+                                        Atrás
+                                    </button>
+                                    <button
+                                        onClick={() => setWizardStep(wizardStep + 1)}
+                                        className="bg-white text-black hover:bg-gray-200 px-6 py-2 rounded-lg font-bold transition shadow-lg"
+                                    >
+                                        Siguiente
                                     </button>
                                 </div>
-                            </div>
-
-                            <div>
-                                <label className="text-xs uppercase text-gray-500 font-bold mb-1 block">Retorno Estimado</label>
-                                <div className="flex flex-col gap-2 mb-2">
-                                    <label className="flex items-center gap-2 text-xs text-gray-400 cursor-pointer">
-                                        <input
-                                            type="checkbox"
-                                            className="rounded border-white/10 bg-black/30 text-green-500 focus:ring-green-500"
-                                            onChange={(e) => {
-                                                if (e.target.checked) setCostData({ ...costData, estimatedReturn: 'No tiene retorno directo asociado' })
-                                                else setCostData({ ...costData, estimatedReturn: '' })
-                                            }}
-                                            checked={costData.estimatedReturn === 'No tiene retorno directo asociado'}
-                                        />
-                                        Esta reunión no tiene un retorno directo asociado
-                                    </label>
-                                    <label className="flex items-center gap-2 text-xs text-gray-400 cursor-pointer">
-                                        <input
-                                            type="checkbox"
-                                            className="rounded border-white/10 bg-black/30 text-green-500 focus:ring-green-500"
-                                            onChange={(e) => {
-                                                if (e.target.checked) setCostData({ ...costData, estimatedReturn: 'No identificado aún' })
-                                                else setCostData({ ...costData, estimatedReturn: '' })
-                                            }}
-                                            checked={costData.estimatedReturn === 'No identificado aún'}
-                                        />
-                                        No identificó aún el retorno
-                                    </label>
-                                </div>
-                                {costData.estimatedReturn !== 'No tiene retorno directo asociado' && costData.estimatedReturn !== 'No identificado aún' && (
-                                    <input
-                                        type="text"
-                                        className="w-full bg-black/30 border border-white/10 rounded-lg p-3 text-white focus:border-green-500 outline-none"
-                                        placeholder="Ej. Incrementar ventas en $5M"
-                                        value={costData.estimatedReturn}
-                                        onChange={(e) => setCostData({ ...costData, estimatedReturn: e.target.value })}
-                                    />
-                                )}
-                            </div>
-
-                            <div>
-                                <label className="text-xs uppercase text-gray-500 font-bold mb-1 block">Objetivo de la reunión</label>
-                                <textarea
-                                    className="w-full bg-black/30 border border-white/10 rounded-lg p-3 text-white h-20 focus:border-green-500 outline-none"
-                                    placeholder="¿Qué esperamos lograr?"
-                                    value={costData.objective}
-                                    onChange={(e) => setCostData({ ...costData, objective: e.target.value })}
-                                />
-                            </div>
-
-                            <div>
-                                <label className="text-xs uppercase text-gray-500 font-bold mb-1 block">Costos Totales Extra</label>
-                                <div className="text-xs text-gray-600 mb-2">Arriendos de sala, refrigerios, técnica audiovisual, etc.</div>
-                                <input
-                                    type="number"
-                                    className="w-full bg-black/30 border border-white/10 rounded-lg p-3 text-white focus:border-green-500 outline-none"
-                                    value={costData.extraCosts}
-                                    onChange={(e) => setCostData({ ...costData, extraCosts: Number(e.target.value) })}
-                                />
-                            </div>
+                            )}
                         </div>
-
-                        <button
-                            onClick={() => setShowCostPopup(false)}
-                            className="w-full mt-6 bg-green-500 hover:bg-green-600 text-black font-bold py-3 rounded-xl transition shadow-lg shadow-green-500/20"
-                        >
-                            Guardar y Volver
-                        </button>
                     </div>
-                </div>
-            )}
+                )
+            }
 
-        </div>
+        </div >
     )
 }
