@@ -25,10 +25,20 @@ export async function login(formData: FormData) {
 
 export async function signInWithGoogle() {
     const supabase = await createClient()
+
+    // Determine the base URL
+    let baseUrl = process.env.NEXT_PUBLIC_APP_URL
+    if (!baseUrl && process.env.VERCEL_URL) {
+        baseUrl = `https://${process.env.VERCEL_URL}`
+    }
+    if (!baseUrl) {
+        baseUrl = 'http://localhost:3000'
+    }
+
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-            redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/auth/callback`,
+            redirectTo: `${baseUrl}/auth/callback`,
         },
     })
 
