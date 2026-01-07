@@ -28,6 +28,18 @@ export default async function SpeakersPage() {
         return `${m}m`
     }
 
+    const handleDeleteSpeaker = async (formData: FormData) => {
+        'use server'
+        await deleteSpeaker(formData)
+        return
+    }
+
+    const handleAddSpeaker = async (formData: FormData) => {
+        'use server'
+        await addSpeaker(formData)
+        return
+    }
+
     return (
         <div className="p-8 max-w-6xl mx-auto text-white">
             <div className="flex justify-between items-center mb-8">
@@ -96,7 +108,7 @@ export default async function SpeakersPage() {
                                             </div>
 
                                             <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition">
-                                                <form action={deleteSpeaker} className="inline">
+                                                <form action={handleDeleteSpeaker} className="inline">
                                                     <input type="hidden" name="id" value={speaker.id} />
                                                     <button className="p-2 hover:bg-red-500/20 text-gray-500 hover:text-red-400 rounded-lg transition">
                                                         <Trash2 className="w-4 h-4" />
@@ -117,7 +129,7 @@ export default async function SpeakersPage() {
                         <Plus className="w-5 h-5" /> Nuevo Orador
                     </h2>
 
-                    <form action={addSpeaker} className="space-y-4">
+                    <form action={handleAddSpeaker} className="space-y-4">
                         <div>
                             <label className="block text-xs uppercase text-gray-500 font-bold mb-1">Nombre</label>
                             <input
