@@ -71,8 +71,8 @@ export default function MeetingAnalytics({ meetingId, isOpen, onClose }: Meeting
             )
 
             const allocatedTitle = s.minutes * 60 // seconds
-            const spoken = log ? log.spoken_seconds : 0
-            const cost = log ? log.cost_incurred : 0
+            const spoken = log ? Number(log.spoken_seconds) : 0
+            const cost = log ? Number(log.cost_incurred) : 0
 
             return {
                 name: s.name,
@@ -105,7 +105,7 @@ export default function MeetingAnalytics({ meetingId, isOpen, onClose }: Meeting
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="max-w-4xl bg-[#1a1a2e] border-white/10 text-white max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-[85vw] md:max-w-7xl bg-[#1a1a2e] border-white/10 text-white max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle className="text-2xl font-bold flex items-center gap-2">
                         <TrendingUp className="text-[#667eea]" />
