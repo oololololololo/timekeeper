@@ -31,7 +31,7 @@ export default async function DashboardPage() {
                 <div className="flex items-center gap-6">
                     <span className="text-sm text-gray-400">Hola, {user.email}</span>
                     <form action={signOut}>
-                        <button className="text-gray-400 hover:text-white transition flex items-center gap-2 text-sm">
+                        <button className="text-gray-400 hover:text-white transition flex items-center gap-2 text-sm active:scale-95">
                             <LogOut className="w-4 h-4" /> Salir
                         </button>
                     </form>
@@ -46,7 +46,7 @@ export default async function DashboardPage() {
                         <h1 className="text-4xl font-bold mb-2">Panel de Control</h1>
                         <p className="text-gray-400">Gestiona tus reuniones y oradores desde un solo lugar.</p>
                     </div>
-                    <Link href="/new" className="bg-[#667eea] hover:bg-[#5a6fd6] text-white px-6 py-3 rounded-xl font-bold transition flex items-center gap-2 shadow-lg shadow-[#667eea]/20">
+                    <Link href="/new" className="bg-[#667eea] hover:bg-[#5a6fd6] text-white px-6 py-3 rounded-xl font-bold transition flex items-center gap-2 shadow-lg shadow-[#667eea]/20 active:scale-95">
                         <Plus className="w-5 h-5" /> Nueva Reunión
                     </Link>
                 </div>

@@ -2,7 +2,7 @@
 
 import { login, signup, signInWithGoogle } from '../auth/actions'
 import { useState } from 'react'
-import { Loader2, Mail, Lock, ArrowRight, Chrome } from 'lucide-react'
+import { Loader2, Mail, Lock, ArrowRight, Chrome, Clock } from 'lucide-react'
 import Link from 'next/link'
 
 export default function LoginPage() {
@@ -40,7 +40,9 @@ export default function LoginPage() {
             <div className="w-full max-w-md bg-white/5 border border-white/10 p-8 rounded-3xl shadow-2xl backdrop-blur-xl">
 
                 <div className="text-center mb-8">
-                    <Link href="/" className="inline-block text-4xl mb-2">⏱️</Link>
+                    <Link href="/" className="inline-block bg-[#667eea]/20 p-3 rounded-2xl mb-4 hover:bg-[#667eea]/30 transition group">
+                        <Clock className="w-8 h-8 text-[#667eea] group-hover:scale-110 transition-transform" />
+                    </Link>
                     <h1 className="text-3xl font-bold text-white mb-2">
                         {mode === 'login' ? 'Bienvenido de nuevo' : 'Crea tu cuenta'}
                     </h1>
@@ -54,7 +56,7 @@ export default function LoginPage() {
                 <div className="mb-6">
                     <button
                         onClick={handleGoogleLogin}
-                        className="w-full bg-white text-gray-900 font-bold py-3 rounded-xl hover:bg-gray-100 transition flex items-center justify-center gap-2"
+                        className="w-full bg-white text-gray-900 font-bold py-3 rounded-xl hover:bg-gray-100 transition flex items-center justify-center gap-2 active:scale-95"
                         type="button"
                     >
                         <Chrome className="w-5 h-5 text-blue-500" />
@@ -108,7 +110,7 @@ export default function LoginPage() {
                     <button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full bg-[#667eea] hover:bg-[#5a6fd6] text-white font-bold py-3.5 rounded-xl transition flex items-center justify-center gap-2 group"
+                        className="w-full bg-[#667eea] hover:bg-[#5a6fd6] text-white font-bold py-3.5 rounded-xl transition flex items-center justify-center gap-2 group active:scale-95"
                     >
                         {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
                             <>

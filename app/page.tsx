@@ -23,7 +23,7 @@ export default function LandingPage() {
           <Link href="#about" className="hover:text-white transition">Nosotros</Link>
         </div>
         <div>
-          <Link href="/login" className="bg-white/10 hover:bg-white/20 text-white px-6 py-2.5 rounded-full text-sm font-semibold transition border border-white/10 flex items-center gap-2">
+          <Link href="/login" className="bg-white/10 hover:bg-white/20 text-white px-6 py-2.5 rounded-full text-sm font-semibold transition border border-white/10 flex items-center gap-2 active:scale-95">
             <span>Iniciar Sesión</span>
           </Link>
         </div>
@@ -49,12 +49,12 @@ export default function LandingPage() {
         </p>
 
         <div className="flex flex-col md:flex-row gap-4 justify-center items-center animate-fade-in-up delay-300">
-          <Link href="/new" className="px-8 py-4 bg-[#667eea] hover:bg-[#5a6fd6] text-white rounded-full font-bold text-lg shadow-lg shadow-[#667eea]/25 transition hover:scale-105 flex items-center gap-2">
+          <Link href="/new" className="px-8 py-4 bg-[#667eea] hover:bg-[#5a6fd6] text-white rounded-full font-bold text-lg shadow-lg shadow-[#667eea]/25 transition hover:scale-105 active:scale-95 flex items-center gap-2">
             Crear Reunión Gratis <ArrowRight className="w-5 h-5" />
           </Link>
           <button
             onClick={() => setShowDemo(true)}
-            className="px-8 py-4 bg-white/5 hover:bg-white/10 text-white rounded-full font-bold text-lg border border-white/10 transition flex items-center gap-3"
+            className="px-8 py-4 bg-white/5 hover:bg-white/10 text-white rounded-full font-bold text-lg border border-white/10 transition flex items-center gap-3 active:scale-95"
           >
             <Play className="w-5 h-5 fill-current" /> Ver Demo en Vivo
           </button>
@@ -163,7 +163,7 @@ export default function LandingPage() {
           <p className="text-white/80 text-lg mb-10 max-w-2xl mx-auto relative z-10">
             Únete a los equipos ágiles que ya están usando MeetKeeper para hacer sus reuniones más cortas y productivas.
           </p>
-          <Link href="/new" className="px-10 py-5 bg-white text-[#667eea] hover:bg-gray-100 rounded-full font-bold text-xl shadow-xl transition relative z-10 inline-block">
+          <Link href="/new" className="px-10 py-5 bg-white text-[#667eea] hover:bg-gray-100 rounded-full font-bold text-xl shadow-xl transition relative z-10 inline-block active:scale-95">
             Empezar Ahora - Es Gratis
           </Link>
           <p className="mt-6 text-sm text-white/60 relative z-10 flex items-center justify-center gap-2">
