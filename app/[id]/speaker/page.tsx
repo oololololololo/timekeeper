@@ -132,12 +132,17 @@ export default function SpeakerPage() {
 
     // SYNC LOGIC (Optimized for viewer)
     const syncLocalState = (ts: any) => {
-        // If drift > 2s, snap.
-        // Otherwise ignore small drifts to prevent jumping
-        const diff = Math.abs(ts.remainingSeconds - localSeconds)
-        if (diff > 2 || !ts.isRunning) {
-            setLocalSeconds(ts.remainingSeconds)
+        let seconds = ts.remainingSeconds
+
+        // Calculate drift if running
+        if (ts.isRunning && !ts.isPaused && ts.lastUpdatedAt) {
+            const now = new Date().getTime()
+            const lastUpdate = new Date(ts.lastUpdatedAt).getTime()
+            const elapsed = Math.floor((now - lastUpdate) / 1000)
+            seconds = seconds - elapsed
         }
+
+        setLocalSeconds(seconds)
 
         if (ts.isRunning && !ts.isPaused) {
             startTicker()

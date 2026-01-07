@@ -13,9 +13,47 @@ export default async function DashboardPage() {
         return redirect('/login')
     }
 
-    // Placeholder data for now
-    const meetings = []
-    const speakers = []
+    // Data Fetching
+    const { data: meetingsData } = await supabase
+        .from('meetings')
+        .select('*')
+        .eq('host_id', user.id)
+        .order('created_at', { ascending: false })
+
+    const { data: speakersData } = await supabase
+        .from('speakers')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('name')
+
+    const meetings = meetingsData || []
+    const speakers = speakersData || []
+
+    // Calculate Savings (Simple Approximation)
+    // We assume 15% time saved on 'finished' meetings compared to scheduled duration
+    // In a real scenario, this would aggregate `meeting_speakers` vs `allocated`
+    const savings = meetings
+        .filter(m => m.status === 'finished')
+        .reduce((acc, m) => {
+            const avgCost = m.meta?.avgMonthlyCost || 0
+            if (!avgCost) return acc
+
+            // Hourly rate per person
+            const hourlyRate = avgCost / 22 / 8
+            const attendees = m.meta?.attendees || 1
+            const costPerMinute = (hourlyRate * attendees) / 60
+
+            // Estimated saving (20% of meeting time)
+            // Ideally we'd compare allocated vs used, but for the dashboard demo:
+            const duration = (m.speakers || []).reduce((s: any, p: any) => s + (p.minutes || 0), 0)
+            const savedMinutes = duration * 0.15
+
+            return acc + (savedMinutes * costPerMinute)
+        }, 0)
+
+    const formatCurrency = (n: number) =>
+        new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(n)
+
 
     return (
         <div className="min-h-screen bg-[#1a1a2e] text-white font-sans">
@@ -72,7 +110,7 @@ export default async function DashboardPage() {
                             <h3 className="text-gray-400 font-medium">Dinero Ahorrado (Est.)</h3>
                             <div className="bg-green-500/20 p-2 rounded-lg text-green-400"><span className="font-bold">$</span></div>
                         </div>
-                        <div className="text-3xl font-bold">$0</div>
+                        <div className="text-3xl font-bold text-green-400">{formatCurrency(savings)}</div>
                     </div>
                 </div>
 
@@ -92,7 +130,22 @@ export default async function DashboardPage() {
                                 <p>Aún no has guardado reuniones.</p>
                             </div>
                         ) : (
-                            <div>{/* List would go here */}</div>
+                            <div className="space-y-4">
+                                {meetings.slice(0, 5).map((m: any) => (
+                                    <Link href={`/${m.id}/admin`} key={m.id} className="block bg-white/5 hover:bg-white/10 p-4 rounded-xl border border-white/5 transition group">
+                                        <div className="flex justify-between items-start mb-1">
+                                            <h4 className="font-bold group-hover:text-[#667eea] transition">{m.title}</h4>
+                                            <span className={`text-xs px-2 py-0.5 rounded ${m.status === 'finished' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
+                                                {m.status === 'finished' ? 'Finalizada' : 'Pendiente'}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between text-sm text-gray-400">
+                                            <span>{new Date(m.created_at).toLocaleDateString()}</span>
+                                            <span>{m.meta?.attendees || 0} personas</span>
+                                        </div>
+                                    </Link>
+                                ))}
+                            </div>
                         )}
                     </div>
 
@@ -110,7 +163,19 @@ export default async function DashboardPage() {
                                 <button className="mt-4 text-[#667eea] font-bold text-sm hover:underline">Agregar Orador</button>
                             </div>
                         ) : (
-                            <div>{/* List would go here */}</div>
+                            <div className="space-y-3">
+                                {speakers.slice(0, 5).map((s: any) => (
+                                    <div key={s.id} className="flex items-center gap-4 bg-white/5 p-3 rounded-xl border border-white/5">
+                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#667eea] to-[#764ba2] flex items-center justify-center font-bold">
+                                            {s.name.charAt(0)}
+                                        </div>
+                                        <div>
+                                            <div className="font-bold">{s.name}</div>
+                                            <div className="text-xs text-gray-500">{s.email}</div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         )}
                     </div>
 

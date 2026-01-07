@@ -72,8 +72,17 @@ export default function AdminPage() {
 
     // SYNC LOGIC
     const syncLocalState = (ts: TimerState) => {
-        // Correct drift logic could go here
-        setLocalSeconds(ts.remainingSeconds)
+        let seconds = ts.remainingSeconds
+
+        // Calculate drift if running
+        if (ts.isRunning && !ts.isPaused && ts.lastUpdatedAt) {
+            const now = new Date().getTime()
+            const lastUpdate = new Date(ts.lastUpdatedAt).getTime()
+            const elapsed = Math.floor((now - lastUpdate) / 1000)
+            seconds = seconds - elapsed
+        }
+
+        setLocalSeconds(seconds)
 
         if (ts.isRunning && !ts.isPaused) {
             startTicker()
@@ -116,11 +125,11 @@ export default function AdminPage() {
     const togglePlay = () => {
         const ts = meeting.timer_state
         if (!ts.isRunning) {
-            updateServer({ isRunning: true, isPaused: false })
+            updateServer({ isRunning: true, isPaused: false, lastUpdatedAt: new Date().toISOString() })
         } else {
             // Pausing
             // IMPORTANT: Persist the specific local second we stopped at
-            updateServer({ isPaused: !ts.isPaused, remainingSeconds: localSeconds })
+            updateServer({ isPaused: !ts.isPaused, remainingSeconds: localSeconds, lastUpdatedAt: !ts.isPaused ? undefined : new Date().toISOString() })
         }
     }
 
@@ -162,7 +171,8 @@ export default function AdminPage() {
                 currentSpeakerIndex: nextIdx,
                 remainingSeconds: speakers[nextIdx].minutes * 60,
                 isRunning: true, // Auto-start? Or wait? user pref. Let's auto-start for flow
-                isPaused: false
+                isPaused: false,
+                lastUpdatedAt: new Date().toISOString()
             })
         }
     }
