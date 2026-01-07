@@ -89,14 +89,41 @@ export async function GET() {
         }
     ]
 
-    const { error } = await supabase.from('meetings').insert(meetingsData)
+    const { data: insertedMeetings, error } = await supabase.from('meetings').insert(meetingsData).select()
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
+    // 4. Crear Logs de Oradores (Para Analytics)
+    const logsData = []
+
+    // Meeting 1: Weekly Sync (Finalizada)
+    const m1 = insertedMeetings.find(m => m.title.includes('Weekly'))
+    if (m1) {
+        logsData.push(
+            { meeting_id: m1.id, speaker_id: s1.id, name_snapshot: s1.name, allocated_seconds: 600, spoken_seconds: 550, cost_incurred: (550 / 3600) * s1.default_cost_per_hour },
+            { meeting_id: m1.id, speaker_id: s2.id, name_snapshot: s2.name, allocated_seconds: 900, spoken_seconds: 800, cost_incurred: (800 / 3600) * s2.default_cost_per_hour },
+            { meeting_id: m1.id, speaker_id: s3.id, name_snapshot: s3.name, allocated_seconds: 300, spoken_seconds: 320, cost_incurred: (320 / 3600) * s3.default_cost_per_hour }
+        )
+    }
+
+    // Meeting 2: Estrategia (Finalizada)
+    const m2 = insertedMeetings.find(m => m.title.includes('Estrategia'))
+    if (m2) {
+        logsData.push(
+            { meeting_id: m2.id, speaker_id: s3.id, name_snapshot: s3.name, allocated_seconds: 1200, spoken_seconds: 1100, cost_incurred: (1100 / 3600) * s3.default_cost_per_hour },
+            { meeting_id: m2.id, speaker_id: s1.id, name_snapshot: s1.name, allocated_seconds: 1200, spoken_seconds: 1250, cost_incurred: (1250 / 3600) * s1.default_cost_per_hour }
+        )
+    }
+
+    if (logsData.length > 0) {
+        await supabase.from('meeting_speakers').insert(logsData)
+    }
+
     return NextResponse.json({
         success: true,
-        message: 'Datos de demostración creados exitosamente. Vuelve al Dashboard.',
+        message: 'Datos de demostración y métricas creados exitosamente.',
         speakersCreated: speakers.length,
-        meetingsCreated: meetingsData.length
+        meetingsCreated: insertedMeetings.length,
+        logsCreated: logsData.length
     })
 }

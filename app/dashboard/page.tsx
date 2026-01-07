@@ -3,6 +3,7 @@ import { createClient } from '@/utils/supabase/server'
 import { signOut } from '../auth/actions'
 import { Plus, Users, BarChart, LogOut, Clock } from 'lucide-react'
 import Link from 'next/link'
+import DashboardMeetingList from '@/components/DashboardMeetingList'
 
 export default async function DashboardPage() {
     const supabase = await createClient()
@@ -124,29 +125,7 @@ export default async function DashboardPage() {
                             Historial de Reuniones
                         </h3>
 
-                        {meetings.length === 0 ? (
-                            <div className="flex-1 flex flex-col items-center justify-center text-center opacity-50">
-                                <BarChart className="w-12 h-12 mb-4 text-gray-600" />
-                                <p>Aún no has guardado reuniones.</p>
-                            </div>
-                        ) : (
-                            <div className="space-y-4">
-                                {meetings.slice(0, 5).map((m: any) => (
-                                    <Link href={`/${m.id}/admin`} key={m.id} className="block bg-white/5 hover:bg-white/10 p-4 rounded-xl border border-white/5 transition group">
-                                        <div className="flex justify-between items-start mb-1">
-                                            <h4 className="font-bold group-hover:text-[#667eea] transition">{m.title}</h4>
-                                            <span className={`text-xs px-2 py-0.5 rounded ${m.status === 'finished' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
-                                                {m.status === 'finished' ? 'Finalizada' : 'Pendiente'}
-                                            </span>
-                                        </div>
-                                        <div className="flex justify-between text-sm text-gray-400">
-                                            <span>{new Date(m.created_at).toLocaleDateString()}</span>
-                                            <span>{m.meta?.attendees || 0} personas</span>
-                                        </div>
-                                    </Link>
-                                ))}
-                            </div>
-                        )}
+                        <DashboardMeetingList meetings={meetings} />
                     </div>
 
                     {/* SPEAKERS LIST */}
