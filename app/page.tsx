@@ -6,19 +6,21 @@ export default function LandingPage() {
     <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] to-[#0f3460] text-white font-sans selection:bg-[#667eea] selection:text-white">
 
       {/* NAVBAR */}
-      <nav className="max-w-7xl mx-auto px-6 py-6 flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <span className="text-2xl">⏱️</span>
-          <span className="font-bold text-xl tracking-tight">TimeKeeper</span>
+      <nav className="max-w-7xl mx-auto px-6 py-6 flex justify-between items-center bg-black/10 backdrop-blur-md sticky top-0 z-50 border-b border-white/5">
+        <div className="flex items-center gap-3 group cursor-pointer">
+          <div className="bg-[#667eea]/20 p-2 rounded-xl group-hover:bg-[#667eea]/30 transition">
+            <Clock className="w-6 h-6 text-[#667eea]" />
+          </div>
+          <span className="font-bold text-xl tracking-tight text-white group-hover:text-[#667eea] transition">TimeKeeper</span>
         </div>
         <div className="hidden md:flex gap-8 text-sm text-gray-300 font-medium">
-          <a href="#features" className="hover:text-white transition">Funcionalidades</a>
-          <a href="#pricing" className="hover:text-white transition">Precios</a>
-          <a href="#about" className="hover:text-white transition">Nosotros</a>
+          <Link href="#features" className="hover:text-white transition">Funcionalidades</Link>
+          <Link href="#pricing" className="hover:text-white transition">Precios</Link>
+          <Link href="#about" className="hover:text-white transition">Nosotros</Link>
         </div>
         <div>
-          <Link href="/login" className="bg-white/10 hover:bg-white/20 text-white px-5 py-2.5 rounded-full text-sm font-semibold transition border border-white/10">
-            Entrar
+          <Link href="/login" className="bg-white/10 hover:bg-white/20 text-white px-6 py-2.5 rounded-full text-sm font-semibold transition border border-white/10 flex items-center gap-2">
+            <span>Iniciar Sesión</span>
           </Link>
         </div>
       </nav>
@@ -103,6 +105,59 @@ export default function LandingPage() {
               </p>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* PRICING SECTION */}
+      <section className="py-24 relative" id="pricing">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-bold mb-4">Planes Flexibles</h2>
+            <p className="text-gray-400">Comienza gratis y escala a medida que tu equipo crece.</p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {/* Free Plan */}
+            <div className="bg-white/5 p-8 rounded-3xl border border-white/10 hover:border-white/20 transition flex flex-col">
+              <h3 className="text-xl font-bold text-white mb-2">Básico</h3>
+              <div className="text-4xl font-bold text-white mb-6">$0 <span className="text-lg text-gray-500 font-normal">/mes</span></div>
+              <ul className="space-y-4 text-gray-300 flex-1 mb-8">
+                <li className="flex items-center gap-3"><ArrowRight className="w-4 h-4 text-[#667eea]" /> Hasta 2 oradores</li>
+                <li className="flex items-center gap-3"><ArrowRight className="w-4 h-4 text-[#667eea]" /> Reuniones ilimitadas</li>
+                <li className="flex items-center gap-3"><ArrowRight className="w-4 h-4 text-[#667eea]" /> Semáforo básico</li>
+              </ul>
+              <Link href="/new" className="w-full py-3 bg-white/10 hover:bg-white/20 rounded-xl font-bold text-center transition">
+                Comenzar Gratis
+              </Link>
+            </div>
+
+            {/* Pro Plan */}
+            <div className="bg-gradient-to-b from-[#667eea]/20 to-[#764ba2]/10 p-8 rounded-3xl border border-[#667eea]/50 hover:border-[#667eea] transition flex flex-col relative overflow-hidden">
+              <div className="absolute top-0 right-0 bg-[#667eea] text-white text-xs font-bold px-3 py-1 rounded-bl-xl">POPULAR</div>
+              <h3 className="text-xl font-bold text-white mb-2">Pro</h3>
+              <div className="text-4xl font-bold text-white mb-6">$29 <span className="text-lg text-gray-500 font-normal">/mes</span></div>
+              <ul className="space-y-4 text-gray-300 flex-1 mb-8">
+                <li className="flex items-center gap-3"><Star className="w-4 h-4 text-yellow-400" /> Oradores ilimitados</li>
+                <li className="flex items-center gap-3"><Star className="w-4 h-4 text-yellow-400" /> Wizard de Costos (ROI)</li>
+                <li className="flex items-center gap-3"><Star className="w-4 h-4 text-yellow-400" /> Teleprompter IA</li>
+                <li className="flex items-center gap-3"><Star className="w-4 h-4 text-yellow-400" /> Métricas avanzadas</li>
+              </ul>
+              <button className="w-full py-3 bg-[#667eea] hover:bg-[#5a6fd6] text-white rounded-xl font-bold transition shadow-lg shadow-[#667eea]/20">
+                Mejorar Plan
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ABOUT SECTION */}
+      <section className="py-24 bg-black/20" id="about">
+        <div className="max-w-7xl mx-auto px-6 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">Sobre Nosotros</h2>
+          <p className="text-gray-400 max-w-2xl mx-auto leading-relaxed mb-12">
+            TimeKeeper nació de la frustración de pasar horas en reuniones improductivas.
+            Creemos que el tiempo es el recurso más valioso de cualquier equipo, y nuestra misión es protegerlo con herramientas simples pero poderosas.
+          </p>
         </div>
       </section>
 
