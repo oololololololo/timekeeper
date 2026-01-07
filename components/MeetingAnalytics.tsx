@@ -145,46 +145,47 @@ export default function MeetingAnalytics({ meetingId, isOpen, onClose }: Meeting
                             </div>
                         </div>
 
-                        {/* CHARTS */}
-                        <div className="grid md:grid-cols-2 gap-8">
+                        {/* CHARTS ROW - Wider Layout */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 
-                            {/* TIME COMPARISON */}
-                            <div className="bg-white/5 p-6 rounded-2xl border border-white/5 min-h-[300px]">
+                            {/* TIME COMPARISON - Horizontal Bars */}
+                            <div className="bg-white/5 p-6 rounded-2xl border border-white/5 min-h-[400px]">
                                 <h3 className="text-lg font-bold mb-6">Tiempo: Planificado vs Real (min)</h3>
-                                <div className="h-[250px] w-full text-xs">
+                                <div className="h-[300px] w-full text-sm">
                                     <ResponsiveContainer width="100%" height="100%">
-                                        <BarChart data={data} layout="vertical" margin={{ top: 5, right: 30, left: 40, bottom: 5 }}>
-                                            <CartesianGrid strokeDasharray="3 3" stroke="#333" horizontal={false} />
-                                            <XAxis type="number" stroke="#999" />
-                                            <YAxis dataKey="name" type="category" width={80} stroke="#fff" />
+                                        <BarChart data={data} layout="horizontal" margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                                            <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+                                            <XAxis dataKey="name" stroke="#999" tick={{ fill: '#ccc' }} />
+                                            <YAxis type="number" stroke="#999" tick={{ fill: '#ccc' }} />
                                             <Tooltip
-                                                contentStyle={{ backgroundColor: '#000', border: '1px solid #333' }}
+                                                cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+                                                contentStyle={{ backgroundColor: '#000', border: '1px solid #333', borderRadius: '8px' }}
                                                 itemStyle={{ color: '#fff' }}
                                             />
-                                            <Legend />
-                                            <Bar dataKey="Planificado" fill="#667eea" radius={[0, 4, 4, 0]} />
-                                            <Bar dataKey="Real" fill="#00b894" radius={[0, 4, 4, 0]} />
+                                            <Legend wrapperStyle={{ paddingTop: '20px' }} />
+                                            <Bar dataKey="Planificado" fill="#667eea" radius={[4, 4, 0, 0]} barSize={30} />
+                                            <Bar dataKey="Real" fill="#00b894" radius={[4, 4, 0, 0]} barSize={30} />
                                         </BarChart>
                                     </ResponsiveContainer>
                                 </div>
                             </div>
 
                             {/* COST DISTRIBUTION */}
-                            <div className="bg-white/5 p-6 rounded-2xl border border-white/5 min-h-[300px]">
+                            <div className="bg-white/5 p-6 rounded-2xl border border-white/5 min-h-[400px]">
                                 <h3 className="text-lg font-bold mb-6">Distribución de Costos</h3>
-                                <div className="h-[250px] w-full">
+                                <div className="h-[300px] w-full">
                                     <ResponsiveContainer width="100%" height="100%">
                                         <PieChart>
                                             <Pie
                                                 data={data}
                                                 cx="50%"
                                                 cy="50%"
-                                                labelLine={false}
-                                                outerRadius={80}
-                                                fill="#8884d8"
+                                                innerRadius={60}
+                                                outerRadius={100}
+                                                paddingAngle={5}
                                                 dataKey="cost"
                                                 nameKey="name"
-                                                label={({ name, percent }: { name?: string, percent?: number }) => (percent || 0) > 0.1 ? `${((percent || 0) * 100).toFixed(0)}%` : ''}
+                                                label={({ name, percent }: { name?: string, percent?: number }) => (percent || 0) > 0.05 ? `${((percent || 0) * 100).toFixed(0)}%` : ''}
                                             >
                                                 {data?.map((entry: any, index: number) => (
                                                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -192,10 +193,10 @@ export default function MeetingAnalytics({ meetingId, isOpen, onClose }: Meeting
                                             </Pie>
                                             <Tooltip
                                                 formatter={(value: any) => formatCurrency(Number(value || 0))}
-                                                contentStyle={{ backgroundColor: '#000', border: '1px solid #333' }}
+                                                contentStyle={{ backgroundColor: '#000', border: '1px solid #333', borderRadius: '8px' }}
                                                 itemStyle={{ color: '#fff' }}
                                             />
-                                            <Legend />
+                                            <Legend wrapperStyle={{ paddingTop: '20px' }} />
                                         </PieChart>
                                     </ResponsiveContainer>
                                 </div>
