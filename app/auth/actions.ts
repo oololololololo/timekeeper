@@ -23,6 +23,24 @@ export async function login(formData: FormData) {
     redirect('/dashboard') // Or wherever we want to land them
 }
 
+export async function signInWithGoogle() {
+    const supabase = await createClient()
+    const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+            redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/auth/callback`,
+        },
+    })
+
+    if (data.url) {
+        redirect(data.url)
+    }
+
+    if (error) {
+        return { error: 'Error iniciando sesión con Google' }
+    }
+}
+
 export async function signup(formData: FormData) {
     const supabase = await createClient()
 

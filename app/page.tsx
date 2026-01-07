@@ -1,12 +1,17 @@
+'use client'
+
 import Link from 'next/link'
-import { ArrowRight, Clock, Star, TrendingUp, DollarSign, Shield } from 'lucide-react'
+import { ArrowRight, Clock, Star, TrendingUp, DollarSign, Shield, Play } from 'lucide-react'
+import { useState } from 'react'
 
 export default function LandingPage() {
+  const [showDemo, setShowDemo] = useState(false)
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] to-[#0f3460] text-white font-sans selection:bg-[#667eea] selection:text-white">
 
       {/* NAVBAR */}
-      <nav className="max-w-7xl mx-auto px-6 py-6 flex justify-between items-center bg-black/10 backdrop-blur-md sticky top-0 z-50 border-b border-white/5">
+      <nav className="max-w-7xl mx-auto px-6 py-6 flex justify-between items-center sticky top-0 z-50 backdrop-blur-sm">
         <div className="flex items-center gap-3 group cursor-pointer">
           <div className="bg-[#667eea]/20 p-2 rounded-xl group-hover:bg-[#667eea]/30 transition">
             <Clock className="w-6 h-6 text-[#667eea]" />
@@ -15,7 +20,6 @@ export default function LandingPage() {
         </div>
         <div className="hidden md:flex gap-8 text-sm text-gray-300 font-medium">
           <Link href="#features" className="hover:text-white transition">Funcionalidades</Link>
-          <Link href="#pricing" className="hover:text-white transition">Precios</Link>
           <Link href="#about" className="hover:text-white transition">Nosotros</Link>
         </div>
         <div>
@@ -48,8 +52,11 @@ export default function LandingPage() {
           <Link href="/new" className="px-8 py-4 bg-[#667eea] hover:bg-[#5a6fd6] text-white rounded-full font-bold text-lg shadow-lg shadow-[#667eea]/25 transition hover:scale-105 flex items-center gap-2">
             Crear Reunión Gratis <ArrowRight className="w-5 h-5" />
           </Link>
-          <button className="px-8 py-4 bg-white/5 hover:bg-white/10 text-white rounded-full font-bold text-lg border border-white/10 transition">
-            Ver Demo en Vivo
+          <button
+            onClick={() => setShowDemo(true)}
+            className="px-8 py-4 bg-white/5 hover:bg-white/10 text-white rounded-full font-bold text-lg border border-white/10 transition flex items-center gap-3"
+          >
+            <Play className="w-5 h-5 fill-current" /> Ver Demo en Vivo
           </button>
         </div>
 
@@ -62,6 +69,32 @@ export default function LandingPage() {
           />
         </div>
       </section>
+
+      {showDemo && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm animate-fade-in cursor-pointer"
+          onClick={() => setShowDemo(false)}
+        >
+          <div
+            className="relative w-full max-w-5xl aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl border border-white/10 cursor-default"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setShowDemo(false)}
+              className="absolute top-4 right-4 z-10 bg-black/50 hover:bg-black/80 text-white p-2 rounded-full transition"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            <iframe
+              className="w-full h-full"
+              src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1"
+              title="TimeKeeper Demo"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            ></iframe>
+          </div>
+        </div>
+      )}
 
       {/* FEATURES GRID */}
       <section className="py-24 bg-black/20" id="features">
@@ -108,47 +141,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* PRICING SECTION */}
-      <section className="py-24 relative" id="pricing">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold mb-4">Planes Flexibles</h2>
-            <p className="text-gray-400">Comienza gratis y escala a medida que tu equipo crece.</p>
-          </div>
 
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {/* Free Plan */}
-            <div className="bg-white/5 p-8 rounded-3xl border border-white/10 hover:border-white/20 transition flex flex-col">
-              <h3 className="text-xl font-bold text-white mb-2">Básico</h3>
-              <div className="text-4xl font-bold text-white mb-6">$0 <span className="text-lg text-gray-500 font-normal">/mes</span></div>
-              <ul className="space-y-4 text-gray-300 flex-1 mb-8">
-                <li className="flex items-center gap-3"><ArrowRight className="w-4 h-4 text-[#667eea]" /> Hasta 2 oradores</li>
-                <li className="flex items-center gap-3"><ArrowRight className="w-4 h-4 text-[#667eea]" /> Reuniones ilimitadas</li>
-                <li className="flex items-center gap-3"><ArrowRight className="w-4 h-4 text-[#667eea]" /> Semáforo básico</li>
-              </ul>
-              <Link href="/new" className="w-full py-3 bg-white/10 hover:bg-white/20 rounded-xl font-bold text-center transition">
-                Comenzar Gratis
-              </Link>
-            </div>
-
-            {/* Pro Plan */}
-            <div className="bg-gradient-to-b from-[#667eea]/20 to-[#764ba2]/10 p-8 rounded-3xl border border-[#667eea]/50 hover:border-[#667eea] transition flex flex-col relative overflow-hidden">
-              <div className="absolute top-0 right-0 bg-[#667eea] text-white text-xs font-bold px-3 py-1 rounded-bl-xl">POPULAR</div>
-              <h3 className="text-xl font-bold text-white mb-2">Pro</h3>
-              <div className="text-4xl font-bold text-white mb-6">$29 <span className="text-lg text-gray-500 font-normal">/mes</span></div>
-              <ul className="space-y-4 text-gray-300 flex-1 mb-8">
-                <li className="flex items-center gap-3"><Star className="w-4 h-4 text-yellow-400" /> Oradores ilimitados</li>
-                <li className="flex items-center gap-3"><Star className="w-4 h-4 text-yellow-400" /> Wizard de Costos (ROI)</li>
-                <li className="flex items-center gap-3"><Star className="w-4 h-4 text-yellow-400" /> Teleprompter IA</li>
-                <li className="flex items-center gap-3"><Star className="w-4 h-4 text-yellow-400" /> Métricas avanzadas</li>
-              </ul>
-              <button className="w-full py-3 bg-[#667eea] hover:bg-[#5a6fd6] text-white rounded-xl font-bold transition shadow-lg shadow-[#667eea]/20">
-                Mejorar Plan
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* ABOUT SECTION */}
       <section className="py-24 bg-black/20" id="about">

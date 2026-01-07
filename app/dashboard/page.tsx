@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
 import { signOut } from '../auth/actions'
-import { Plus, Users, BarChart, LogOut } from 'lucide-react'
+import { Plus, Users, BarChart, LogOut, Clock } from 'lucide-react'
 import Link from 'next/link'
 
 export default async function DashboardPage() {
@@ -22,8 +22,10 @@ export default async function DashboardPage() {
 
             {/* HEADER */}
             <header className="border-b border-white/10 px-8 py-4 flex justify-between items-center bg-[#1a1a2e]/50 backdrop-blur-xl sticky top-0 z-50">
-                <div className="flex items-center gap-2">
-                    <span className="text-2xl">⏱️</span>
+                <div className="flex items-center gap-3">
+                    <div className="bg-[#667eea]/20 p-2 rounded-xl">
+                        <Clock className="w-5 h-5 text-[#667eea]" />
+                    </div>
                     <span className="font-bold text-lg tracking-tight">TimeKeeper <span className="text-xs bg-[#667eea] px-2 py-0.5 rounded text-white ml-2">PRO</span></span>
                 </div>
                 <div className="flex items-center gap-6">

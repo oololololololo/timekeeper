@@ -1,8 +1,8 @@
 'use client'
 
-import { login, signup } from '../auth/actions'
+import { login, signup, signInWithGoogle } from '../auth/actions'
 import { useState } from 'react'
-import { Loader2, Mail, Lock, ArrowRight } from 'lucide-react'
+import { Loader2, Mail, Lock, ArrowRight, Chrome } from 'lucide-react'
 import Link from 'next/link'
 
 export default function LoginPage() {
@@ -30,6 +30,11 @@ export default function LoginPage() {
         }
     }
 
+    const handleGoogleLogin = async () => {
+        setIsLoading(true)
+        await signInWithGoogle()
+    }
+
     return (
         <div className="min-h-screen flex items-center justify-center bg-[#1a1a2e] px-4">
             <div className="w-full max-w-md bg-white/5 border border-white/10 p-8 rounded-3xl shadow-2xl backdrop-blur-xl">
@@ -44,6 +49,25 @@ export default function LoginPage() {
                             ? 'Ingresa para gestionar tus oradores y métricas.'
                             : 'Empieza a optimizar tus reuniones hoy mismo.'}
                     </p>
+                </div>
+
+                <div className="mb-6">
+                    <button
+                        onClick={handleGoogleLogin}
+                        className="w-full bg-white text-gray-900 font-bold py-3 rounded-xl hover:bg-gray-100 transition flex items-center justify-center gap-2"
+                        type="button"
+                    >
+                        <Chrome className="w-5 h-5 text-blue-500" />
+                        Continuar con Google
+                    </button>
+                    <div className="relative my-6">
+                        <div className="absolute inset-0 flex items-center">
+                            <div className="w-full border-t border-white/10"></div>
+                        </div>
+                        <div className="relative flex justify-center text-xs uppercase">
+                            <span className="bg-[#1a1a2e] px-2 text-gray-500">O con email</span>
+                        </div>
+                    </div>
                 </div>
 
                 <form action={handleSubmit} className="space-y-4">
